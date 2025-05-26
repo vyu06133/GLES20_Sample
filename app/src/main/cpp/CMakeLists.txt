@@ -6,12 +6,16 @@ project("gles20_sample")
 set(CMAKE_CXX_STANDARD 17)
 
 # glmを含める（プロジェクトのcpp/glmにヘッダを置く場合）
-include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/glm)
+# CMakeLists.txt が app/src/main/cpp/ にある場合
+# CMAKE_CURRENT_SOURCE_DIR は app/src/main/cpp/ を指す
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/)
 
 add_library(
         native-lib
         SHARED
         native-lib.cpp
+        TaskBase.cpp
+        TaskSystem.cpp
 )
 
 find_library(

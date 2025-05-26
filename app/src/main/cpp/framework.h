@@ -27,9 +27,23 @@
 #include <unordered_map>
 #include <functional>
 
-#include "glm/glm.hpp"
-#include "glm/gtc/type_ptr.hpp"
-using glm::mat4;
+#define GLM_ENABLE_EXPERIMENTAL
+#define GLM_FORCE_SWIZZLE
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#include <glm/gtx/string_cast.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtc/matrix_access.hpp>
+#include <glm/gtx/rotate_vector.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/scalar_relational.hpp> // glm::sum() を使用するために必要
 using glm::vec3;
+using glm::vec4;
+using glm::mat3;
+using glm::mat4;
+using glm::quat;
 
 

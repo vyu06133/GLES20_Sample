@@ -30,6 +30,12 @@ android {
 				"proguard-rules.pro"
 			)
 		}
+		debug {
+			// ネイティブデバッグを有効にする
+			// debuggable を true に設定することで、NDK ビルドがデバッグシンボルを含んだ共有ライブラリを生成する
+			isDebuggable = true
+			isJniDebuggable = true // これも追加しておくとより確実
+		}
 	}
 	compileOptions {
 		sourceCompatibility = JavaVersion.VERSION_11

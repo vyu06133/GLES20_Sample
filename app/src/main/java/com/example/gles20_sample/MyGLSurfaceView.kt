@@ -2,6 +2,7 @@ package com.example.gles20_sample
 
 import android.content.Context
 import android.opengl.GLSurfaceView
+import android.util.Log
 import android.view.MotionEvent
 
 class MyGLSurfaceView(context: Context) : GLSurfaceView(context) {
@@ -20,6 +21,8 @@ class MyGLSurfaceView(context: Context) : GLSurfaceView(context) {
 	override fun onTouchEvent(event: MotionEvent): Boolean {
 		val x = event.x
 		val y = event.y
+		
+		renderer.nativeTouchEvent(event.action.toInt(), x.toInt(), y.toInt())
 		
 		if (event.action == MotionEvent.ACTION_MOVE) {
 			val dx = x - previousX

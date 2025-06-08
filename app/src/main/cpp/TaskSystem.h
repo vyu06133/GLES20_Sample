@@ -1,5 +1,6 @@
 #pragma once
 #include "TaskBase.h"
+#include "Shader.h"
 
 class TaskSystem
 {
@@ -44,7 +45,6 @@ public:
 	{
 		do {
 			taskId++;
-			//todo: ƒGƒ‰[ƒ`ƒFƒbƒN
 		} while (taskMap.count(taskId));
 		T* newtask = new T();
 		if (newtask)
@@ -83,9 +83,15 @@ public:
 
 public:
 	int32_t taskId = 0;
-	std::vector<TaskBase*> tasks;//ì¬‡
+	std::vector<TaskBase*> tasks;//ï¿½ì¬ï¿½ï¿½
 	std::unordered_map<int32_t, TaskBase*> taskMap;
-	std::vector<TaskBase*> ticks;//tick‡
-	std::vector<TaskBase*> draws;//draw‡
+	std::vector<TaskBase*> ticks;//tickï¿½ï¿½
+	std::vector<TaskBase*> draws;//drawï¿½ï¿½
+	int32_t width_;
+	int32_t& Width() {return  width_;}
+	int32_t height_;
+	int32_t& Height() {return height_;}
+	Shader shader_;
+	Shader& Shader() {return shader_;}
 };
 

@@ -15,6 +15,7 @@ public:
 	virtual void OnDraw();
 	virtual void OnCreate();
 	virtual void OnDestroy();
+	virtual void OnTouch(int action, int x, int y);
 	virtual void OnKeyDown(int vk);
 	virtual void OnKeyUp(int vk);
 	virtual bool IsValid() const;

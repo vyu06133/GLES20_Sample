@@ -1,10 +1,8 @@
 #include <jni.h>
 #include <android/log.h>
-#include <GLES2/gl2.h>
-#include "glm/glm.hpp"
-#include "glm/gtc/type_ptr.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-
+#include "framework.h"
+#include "Test.h"
+Test test;
 GLuint program;
 GLuint uMVPMatrixLocation;
 GLuint positionHandle;
@@ -47,6 +45,28 @@ Java_com_example_gles20_1sample_MyGLRenderer_nativeInit(JNIEnv *, jobject) {
 
 	uMVPMatrixLocation = glGetUniformLocation(program, "uMVPMatrix");
 	positionHandle = glGetAttribLocation(program, "aPosition");
+	test.Init();
+	test.Setup();
+}
+
+#if 1
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_gles20_1sample_MyGLRenderer_nativeTouchEvent( JNIEnv* env, jobject MyGLRenderer, jint action, jint x, jint y)
+{
+	LOGD("C++ 0x%x %d,%d\n",(unsigned int)action,x,y);
+}
+#endif
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_gles20_1sample_MyGLRenderer_nativeSurfaceChanged(JNIEnv *env, jobject MyGLRenderer, int width, int height)
+{
+	test.SurfaceChanged(width, height);
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_gles20_1sample_MyGLRenderer_nativeDrawFrame(JNIEnv *env, jobject MyGLRenderer)
+{
+	test.DrawFrame();
 }
 
 extern "C" JNIEXPORT void JNICALL

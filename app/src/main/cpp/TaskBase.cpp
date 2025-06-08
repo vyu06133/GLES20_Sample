@@ -28,6 +28,10 @@ void TaskBase::OnDestroy()
 {
 }
 
+void TaskBase::OnTouch(int action, int x, int y)
+{
+}
+
 void TaskBase::OnKeyDown(int vk)
 {
 }
@@ -45,19 +49,19 @@ void TaskBase::EnsureWorld()
 {
 	if (worldDirty)
 	{
-		// world_‚ªŠ®¬‚µ‚Ä‚¢‚È‚¢‚Ì‚ÅŠ®¬‚³‚¹‚é
+		// world_ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä‚ï¿½ï¿½È‚ï¿½ï¿½Ì‚ÅŠï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (parent && parent->IsValid())
 		{
 			if (parent->worldDirty)
 			{
-				// e‚Ìworld_Šm’è‚ð”O‰Ÿ‚µ‚·‚é
-				parent->EnsureWorld();//Ä‹A
+				// ï¿½eï¿½ï¿½world_ï¿½mï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+				parent->EnsureWorld();//ï¿½Ä‹A
 			}
 			worldMatrix = localMatrix * parent->worldMatrix;
 		}
 		else
 		{
-			// root	’¼‰º‚Å‚ ‚é
+			// root	ï¿½ï¿½ï¿½ï¿½ï¿½Å‚ï¿½ï¿½ï¿½
 			worldMatrix= localMatrix;//* taskSys_->origin_;
 		}
 		worldDirty = false;

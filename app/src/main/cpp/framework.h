@@ -59,3 +59,5 @@ using GlmVariant = std::variant<int, float, vec2, vec3, vec4, quat, mat3, mat4>;
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #define LOGF(...) __android_log_print(ANDROID_LOG_FATAL, LOG_TAG, __VA_ARGS__)
+
+#include "MyMath.h"

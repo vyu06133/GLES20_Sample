@@ -13,6 +13,7 @@ public:
 	virtual void OnTick(float deltaTime);
 	virtual void OnPostTick();
 	virtual void OnDraw();
+	virtual void OnPostDraw();
 	virtual void OnCreate();
 	virtual void OnDestroy();
 	virtual void OnTouch(int action, int x, int y);

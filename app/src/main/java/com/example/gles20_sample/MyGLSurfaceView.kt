@@ -22,6 +22,8 @@ class MyGLSurfaceView(context: Context) : GLSurfaceView(context) {
 		val x = event.x
 		val y = event.y
 		
+		// as IntではFATAL EXCEPTION
+		// toInt()で通る
 		renderer.nativeTouchEvent(event.action.toInt(), x.toInt(), y.toInt())
 		
 		if (event.action == MotionEvent.ACTION_MOVE) {

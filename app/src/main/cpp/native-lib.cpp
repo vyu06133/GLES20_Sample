@@ -43,8 +43,8 @@ Java_com_example_gles20_1sample_MyGLRenderer_nativeInit(JNIEnv *, jobject) {
 	glAttachShader(program, fragmentShader);
 	glLinkProgram(program);
 
-	uMVPMatrixLocation = glGetUniformLocation(program, "uMVPMatrix");
-	positionHandle = glGetAttribLocation(program, "aPosition");
+//	uMVPMatrixLocation = glGetUniformLocation(program, "uMVPMatrix");
+//	positionHandle = glGetAttribLocation(program, "aPosition");
 	test.Init();
 	test.Setup();
 }

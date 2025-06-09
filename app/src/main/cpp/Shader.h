@@ -10,7 +10,7 @@
 class Shader
 {
 public:
-	GLint FindUniformLoc(const char* Name)
+	GLint FindUniformLoc(const char *Name)
 	{
 		GLint loc = -1;
 		if (uniformLocMap_.count(Name) != 0)
@@ -26,7 +26,7 @@ public:
 		return loc;
 	}
 
-	bool Create(const char* vertexShaderCode, const char* fragmentShaderCode)
+	bool Create(const char *vertexShaderCode, const char *fragmentShaderCode)
 	{
 		vertexShader_ = loadShader(GL_VERTEX_SHADER, vertexShaderCode);
 		if (!vertexShader_)
@@ -52,6 +52,7 @@ public:
 
 		return true;
 	}
+
 	enum UniformSemantics
 	{
 		Model,
@@ -64,22 +65,29 @@ public:
 		UniformSemanticsMax
 	};
 	GLint UniformLocs_[UniformSemanticsMax] = {};
-	bool UpdateUniform(const char* Name, const GlmVariant& variant) {
+
+	bool UpdateUniform(const char *Name, const GlmVariant &variant)
+	{
 		auto loc = FindUniformLoc(Name);
-		if (loc < 0) {
+		if (loc < 0)
+		{
 			LOGE("UniformSemantics(%s) missing.\n", Name);
 			return false;
 		}
 		return UpdateUniform(loc, variant);
 	}
-	bool UpdateUniform(UniformSemantics semantics, const GlmVariant& variant) {
-		if (0 > semantics || semantics >= UniformSemanticsMax) {
+
+	bool UpdateUniform(UniformSemantics semantics, const GlmVariant &variant)
+	{
+		if (0 > semantics || semantics >= UniformSemanticsMax)
+		{
 			LOGE("UniformSemantics(%d) out of range.\n", semantics);
 			return false;
 		}
 		return UpdateUniform(UniformLocs_[semantics], variant);
 	}
-	bool UpdateUniform(GLint loc, const GlmVariant& variant)
+
+	bool UpdateUniform(GLint loc, const GlmVariant &variant)
 	{
 		if (loc < 0)
 		{
@@ -142,51 +150,40 @@ public:
 		return true;
 
 	}
+
 	auto GetSemanticsLoc(UniformSemantics semantics) const
 	{
 		if (semantics < 0 || semantics >= UniformSemanticsMax)
 		{
-			LOGE("UniformSemantics(%d) out of range.\n",semantics);
+			LOGE("UniformSemantics(%d) out of range.\n", semantics);
 			return -1;
 		}
 		return UniformLocs_[semantics];
 	}
-	GLint ConnectUniformAndSemantics(UniformSemantics semantics, const char* Name)
+
+	GLint ConnectUniformAndSemantics(UniformSemantics semantics, const char *Name)
 	{
 		if (semantics < 0 || semantics >= UniformSemanticsMax)
 		{
-			LOGE("UniformSemantics(%d) out of range.\n",semantics);
+			LOGE("UniformSemantics(%d) out of range.\n", semantics);
 			return 0;
 		}
 		auto loc = FindUniformLoc(Name);
 		UniformLocs_[semantics] = loc;
 		return loc;
 	}
-	GLint  ConnectAttrib(const char* SenainticsName, const char* AttribName)
+
+	GLint ConnectAttrib(const char *SenainticsName, const char *AttribName)
 	{
 		return 0;
 	}
-	template<typename T>
-	inline void VertexAttribPointer(void* top) {
-		Vertex::INPUT_ELEMENT_DESC *elm = (Vertex::INPUT_ELEMENT_DESC *) T::InputLayout;
-		char* ptr = (char*)top;
-		while (elm && elm->SemanticName != nullptr) {
-			auto handle = glGetAttribLocation(program_, elm->SemanticName);
-			//assert(handle >= 0):
-			//glVertexAttribPointer(handle, 3, GL_FLOAT, GL_FALSE, 0, triangleVertices);
-			//glEnableVertexAttribArray(positionHandle);
-			//glEnableVertexAttribArray(elm->index);
-			glEnableVertexAttribArray(handle);
-			glVertexAttribPointer(handle, elm->size, GL_FLOAT, GL_FALSE, sizeof(T), (void*)ptr);
-			ptr += sizeof(float) * elm->size;
-			elm++;
-		}
-	}
 
 private:
-	GLuint loadShader(GLenum type, const char *shaderCode) {
+	GLuint loadShader(GLenum type, const char *shaderCode)
+	{
 		GLuint shader = glCreateShader(type);
-		if (shader == 0) {
+		if (shader == 0)
+		{
 			// glCreateShaderが失敗した場合、通常はメモリ不足などの問題
 			LOGE("ERROR: Failed to create shader of type 0x%x\n", type);
 			return 0;
@@ -195,16 +192,19 @@ private:
 		glCompileShader(shader);
 		GLint compiled;
 		glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled); // コンパイルステータスを取得
-		if (!compiled) {
+		if (!compiled)
+		{
 			// コンパイルに失敗した場合
 			GLint infoLen = 0;
 			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLen); // エラーログの長さを取得
 
-			if (infoLen > 1) { // エラーログが存在する場合 (1より大きいのはヌル終端文字のため)
-				std::string info(infoLen,'\0');
+			if (infoLen > 1)
+			{ // エラーログが存在する場合 (1より大きいのはヌル終端文字のため)
+				std::string info(infoLen, '\0');
 				glGetShaderInfoLog(shader, infoLen, nullptr, info.data()); // エラーログを取得
 				LOGE("ERROR: Could not compile shader 0x%x:\n%s\n", type, info.data());
-			} else {
+			} else
+			{
 				LOGE("ERROR: Could not compile shader 0x%x: No info log available.\n", type);
 			}
 
@@ -215,20 +215,36 @@ private:
 	}
 
 public:
-	GLuint& Program()
+	GLuint Program() const
 	{
 		return program_;
 	}
 
-	GLint& Width()
+	float GetWidth() const
 	{
-		return screenWidth_;
+		return (float)screenWidth_;
 	}
 
-	GLint& Height()
+	float GetHeight() const
 	{
-		return screenHeight_;
+		return (float)screenHeight_;
 	}
+
+	void SetScreenSize(int w, int h)
+	{
+		screenWidth_ = w;
+		screenHeight_ = h;
+	}
+
+	float GetAspect() const
+	{
+		if (screenHeight_ > 0)
+		{
+			return (float)screenWidth_ / (float)screenHeight_;
+		}
+		return 1.0f;
+	}
+
 private:
 	GLint screenWidth_ = 0;
 	GLint screenHeight_ = 0;
@@ -237,63 +253,20 @@ private:
 	GLuint fragmentShader_ = 0;
 	std::unordered_map<std::string, GLint> uniformLocMap_;
 public:
+	//敢えてVAOを使わないパターン
 	template<typename V>
-	void BindVertexBuffer(const V* bufferTop)
+	void BindVertexBuffer(const V *bufferTop) const
 	{
-		//敢えてVAOを使わないパターン
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0); // 必須（バッファをバインド解除）
+		glBindBuffer(GL_ARRAY_BUFFER, 0); // VAOをバインド解除
 		auto elm = V::InputLayout;
-		char* ofs = (char*)bufferTop;
+		auto ofs = reinterpret_cast<const char*>(bufferTop);
 		while (elm && elm->SemanticName != nullptr)
 		{
 			auto handle = glGetAttribLocation(program_, elm->SemanticName);
 			glEnableVertexAttribArray(handle);
 			glVertexAttribPointer(handle, elm->size, GL_FLOAT, GL_FALSE, sizeof(V), ofs);
-			ofs += 4/*sizeof(float)*/ * elm->size;
+			ofs += sizeof(GLfloat) * elm->size;
 			elm++;
 		}
 	}
-
-#if 0
-	struct Attrib
-	{
-		std::string attribName = "";
-		std::string semanticName = "";
-		int dim = 0;
-		int strride = 0;
-		const void* ofs = nullptr;
-		GLuint handle = 0;
-	};
-private:
-	std::unordered_map<std::string, Attrib> attribLocMap_;
-
-public:
-
-	GLuint VertexAttribPointer(const char* Name, const char* Semantic, int dim, int strride, const void* ofs)
-	{
-		Attrib attr;
-		if (attribLocMap_.count(Name) != 0)
-		{
-			LOGE("%s already exisits\n", Name);
-			return 0u;
-		}
-		attr.attribName = Name;
-		attr.semanticName = Semantic;
-		attr.handle = glGetAttribLocation(program_, Name);
-		attr.dim = dim;
-		attr.strride = strride;
-		attr.ofs = ofs;
-		LOGD("VertexAttribPointer(%s %s %d %d 0x%x)=%u\n", Name, Semantic, dim, strride, ofs, attr.handle);
-		glVertexAttribPointer(
-			attr.handle,
-			dim,
-			GL_FLOAT,      // データ型を GL_FLOAT にする
-			GL_FALSE, // 正規化しない
-			strride,
-			ofs );
-		attribLocMap_[Name] = attr;
-		return attr.handle;
-	}
-#endif
 };

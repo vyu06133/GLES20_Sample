@@ -20,6 +20,10 @@ void TaskBase::OnDraw()
 {
 }
 
+void TaskBase::OnPostDraw()
+{
+}
+
 void TaskBase::OnCreate()
 {
 }

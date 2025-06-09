@@ -41,20 +41,39 @@ public:
 		eyeWorld_ = (worldMatrix * vec4(eye_, 1.0f)).xyz();
 		centerWorld_ = (worldMatrix * vec4(center_, 1.0f)).xyz();
 		upWorld_  = glm::normalize((worldMatrix * vec4(up_, 0.0f)).xyz());
+	}
+
+	virtual void OnPostDraw() override
+	{
 		view_ = glm::lookAt(eyeWorld_, centerWorld_, upWorld_);
 		assert(ts);
-		auto w = (float)ts->Width();
-		auto h = (float)ts->Height();
-		assert(h > 0.0f);
+		auto s = ts->Shader();
 		if (pers_)
 		{
-			auto aspect = w / h;
-			proj_ = glm::perspective(glm::radians(fov_), aspect, near_, far_);
+			proj_ = glm::perspective(glm::radians(fov_), s.GetAspect(), near_, far_);
 		}
 		else
 		{
-			proj_ = glm::ortho(0.0f, w, h, 0.0f, near_, far_);
+			proj_ = glm::ortho(0.0f, s.GetWidth(), s.GetHeight(), 0.0f, near_, far_);
 		}
+		s.UpdateUniform(s.View, view_);
+		s.UpdateUniform(s.Projection, proj_);
+	}
+
+	virtual vec3 Unproject(const vec3& scr) const
+	{
+		auto x = static_cast<float>(scr.x);
+		auto y = static_cast<float>(scr.y);
+		assert(ts);
+		auto w = (float)ts->Width();
+		auto h = (float)ts->Height();
+		vec3 s(scr.x, h - scr.y, scr.z);
+		vec3 posVec = glm::unProject(
+				s,
+				view_,
+				proj_,
+				vec4(0.0f, 0.0f, w, h));
+		return posVec;
 	}
 
 	vec3 eye_;
@@ -65,7 +84,7 @@ public:
 	vec3 upWorld_;
 	float near_ = 0.1f;
 	float far_ = 20.0f;
-	float fov_ = 30.0f;//deg
+	float fov_ = 60.0f;//deg
 	bool pers_ = true;
 	mat4 view_;
 	mat4 proj_;

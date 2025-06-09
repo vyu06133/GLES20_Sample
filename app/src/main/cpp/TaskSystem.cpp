@@ -1,5 +1,5 @@
 #include "TaskSystem.h"
-
+#include "Shader.h"
 
 TaskSystem::TaskSystem()
 {
@@ -23,7 +23,17 @@ void TaskSystem::Tick(float Delta)
 		}
 	}
 
-	// ‚»‚ê‚¼‚ê‚ÌOnPostTick‚ðŒÄ‚Ô
+	// world_ï¿½ï¿½ï¿½Nï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½ï¿½
+	for (auto e : ticks)
+	{
+		if (e->IsValid())
+		{
+			e->worldDirty = true;
+			e->EnsureWorld();//worldMatrix = mat4(1.0f);
+		}
+	}
+
+	// ï¿½ï¿½ï¿½ê‚¼ï¿½ï¿½ï¿½OnPostTickï¿½ï¿½ï¿½Ä‚ï¿½
 	for (auto e : ticks)
 	{
 		if (e->IsValid())
@@ -32,17 +42,7 @@ void TaskSystem::Tick(float Delta)
 		}
 	}
 
-	// world_‚ðƒNƒŠƒA‚·‚é
-	for (auto e : ticks)
-	{
-		if (e->IsValid())
-		{
-			e->worldDirty = true;
-			e->worldMatrix = mat4(1.0f);
-		}
-	}
-
-	// ‚»‚ê‚¼‚ê‚ÌeŽqŠÖŒW‚Åworld_‚ð\’z‚·‚é
+	// ï¿½ï¿½ï¿½ê‚¼ï¿½ï¿½Ìeï¿½qï¿½ÖŒWï¿½ï¿½world_ï¿½ï¿½ï¿½\ï¿½zï¿½ï¿½ï¿½ï¿½
 	for (auto e : ticks)
 	{
 		if (e->IsValid())
@@ -59,7 +59,9 @@ void TaskSystem::Draw() const
 		if (e->IsValid())
 		{
 			e->EnsureWorld();
+//			shader_.UpdateUniform(Shader::Model, e->worldMatrix);
 			e->OnDraw();
+			e->OnPostDraw();
 		}
 	}
 }

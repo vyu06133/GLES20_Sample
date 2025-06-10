@@ -12,60 +12,40 @@ struct Test
 {
 	static inline TaskSystem ts;
 
-#if 0
 	class Camera : public CameraBase
 	{
 		virtual void OnTick(float) override
 		{
-			LOGD("Camera::OnTick\n");
-			eye_ = vec3(30.f, 40.f, 50.f);
-		}
-		virtual void OnDraw() override
-		{
-			LOGD("Camera::OnDraw\n");
-			CameraBase::OnDraw();
-		}
-		virtual void OnPostDraw() override
-		{
-			LOGD("Camera::OnPostDraw\n");
-			CameraBase::OnPostDraw();
+			auto s = ts->Shader();
+			auto ang = glm::radians((float)elapsed * 0.5f);
+			mEye = vec3(MyMath::Sin(ang) * 15.0f, 10.0f, MyMath::Cos(ang) * 15.0f);
+			mCenter = vec3(0.0f);
+			mUp = vec3(0.0f,1.0f,0.0f);
 		}
 	};
 
 	class Stage : public TaskBase
 	{
 	public:
-		std::vector<VertexPNC> m_pnc;
+		std::vector<VertexPNC> mPnc;
 		virtual void OnTick(float deltaTime) override
 		{
-			LOGD("Stage::OnTick\n");
-			worldMatrix = mat4(1.0f);
-		}
-		virtual void OnPostTick() override
-		{
-			LOGD("Stage::OnPostTick\n");
+			localMatrix = mat4(1.0f);
 		}
 		virtual void OnCreate() override
 		{
-			LOGD("Stage::OnCreate\n");
-			Geometry::GenerateCheckerPlaneZX(&m_pnc,vec3(10.0f),vec3(2.0f),vec4(0.1f, 0.1f, 0.1f, 1.0f), vec4(0.9f, 0.9f, 0.9f, 1.0f));
+			Geometry::GenerateCheckerPlaneZX(&mPnc,vec3(20.0f),vec3(20.0f),vec4(0.1f, 0.1f, 0.1f, 1.0f), vec4(0.9f, 0.9f, 0.9f, 1.0f));
 			auto s= ts->Shader();
-		}
-		virtual void OnPostDraw() override
-		{
-			LOGD("Stage::OnPostDraw\n");
 		}
 		virtual void OnDraw() override
 		{
-			LOGD("Stage::OnDraw\n");
-			auto s= ts->Shader();
+			auto s = ts->Shader();
 			s.UpdateUniform(s.Model,worldMatrix);
-			s.BindVertexBuffer(m_pnc.data());
-			glDrawArrays(GL_TRIANGLES,0,m_pnc.size());
-
+			s.BindVertexBuffer(mPnc.data());
+			glDrawArrays(GL_TRIANGLES,0,mPnc.size());
 		}
 	};
-#endif
+
 	static inline const char* vertex_shader_src =
 			"attribute vec3 a_position;\n"
 			"attribute vec3 a_normal;\n"
@@ -116,21 +96,31 @@ static inline std::vector<VertexPNC> vpnc;
 		s.UpdateUniform(s.Model,model_);
 		s.UpdateUniform(s.View,view_);
 		s.UpdateUniform(s.Projection,proj_);
-		Geometry::GenerateCheckerPlaneZX(&vpnc,vec3(10.0f),vec3(2.0f),vec4(0.1f, 0.1f, 0.1f, 1.0f), vec4(0.9f, 0.9f, 0.9f, 1.0f));
+		Geometry::GenerateCheckerPlaneZX(&vpnc,vec3(20.0f),vec3(20.0f),vec4(0.1f, 0.1f, 0.1f, 1.0f), vec4(0.9f, 0.9f, 0.9f, 1.0f));
 	}
 
-	static inline void SurfaceChanged( int width, int height)
+	static inline void SurfaceChanged(int width, int height)
 	{
 		auto& s = ts.Shader();
 		s.SetScreenSize(width, height);
 		glViewport(0, 0, width, height);
 	}
 
+	static inline void Touch(int action, int x, int y)
+	{
+		ts.BroadcastTouch(action,x,y);
+	}
+
 	static inline void DrawFrame()
 	{
-#if 1
+#if 0
 		auto& s = ts.Shader();
 		glUseProgram(s.Program());
+		glUseProgram(s.Program());
+	ts.Tick(1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	ts.Draw();
+/*
 // CPUメモリ上の配列から直接描画する（VBOをバインドしない）
 	model_=mat4(1.0f);
 		s.UpdateUniform(s.Model,model_);
@@ -138,7 +128,7 @@ static inline std::vector<VertexPNC> vpnc;
 		auto ang = glm::radians(rot);
 		rot += 0.5f;
 		view_ = glm::lookAt(
-				glm::vec3(sinf(ang) * 15.0f, 10.0f, cosf(ang) * 15.0f),
+				glm::vec3(MyMath::Sin(ang) * 15.0f, 10.0f, MyMath::Cos(ang) * 15.0f),
 				glm::vec3(0.0f),
 				glm::vec3(0.0f, 1.0f, 0.0f));
 		s.UpdateUniform(s.View,view_);
@@ -146,7 +136,8 @@ static inline std::vector<VertexPNC> vpnc;
 		s.UpdateUniform(s.Projection,proj_);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		s.BindVertexBuffer(vpnc.data());
-		glDrawArrays(GL_TRIANGLES, 0, vpnc.size());
+//		glDrawArrays(GL_TRIANGLES, 0, vpnc.size());
+*/
 #else
 		auto& s = ts.Shader();
 		glUseProgram(s.Program());
@@ -158,7 +149,7 @@ static inline std::vector<VertexPNC> vpnc;
 
 	static inline void Setup()
 	{
-//		auto c= ts.CreateTask<Camera>(nullptr,0,-1);
-//		auto s= ts.CreateTask<Stage>(nullptr,0,0);
+		auto c = ts.CreateTask<Camera>(nullptr,"Camera",0,0);
+		auto s = ts.CreateTask<Stage>(nullptr,"Stage",1,1);
 	}
 };

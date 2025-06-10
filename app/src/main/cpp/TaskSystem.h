@@ -32,16 +32,6 @@ public:
 	void Tick(float Delta);
 	void Draw() const;
 
-	void BroadcastKeyDown(int key)
-	{
-		for (auto& t : ticks)
-		{
-			if (t && t->IsValid())
-			{
-				t->OnKeyDown(key);
-			}
-		}
-	}
 	template<class T> T* CreateTask(TaskBase* const parent, const char* name = nullptr, int32_t tickPrio = defaultTickPrio, int32_t drawPrio = defaultDrawPrio)
 	{
 		do {
@@ -82,16 +72,27 @@ public:
 		return result;
 	}
 
+	void BroadcastTouch(int action, int x, int y)
+	{
+		for (auto& t: tasks)
+		{
+			if (t && t->IsValid())
+			{
+				t->OnTouch(action, x, y);
+			}
+		}
+	}
+
 public:
 	int32_t taskId = 0;
 	std::vector<TaskBase*> tasks;//�쐬��
 	std::unordered_map<int32_t, TaskBase*> taskMap;
 	std::vector<TaskBase*> ticks;//tick��
 	std::vector<TaskBase*> draws;//draw��
-	int32_t width_;
-	int32_t& Width() {return  width_;}
-	int32_t height_;
-	int32_t& Height() {return height_;}
+//	int32_t width_;
+	float GetWidth() const {return shader_.GetWidth();}
+//	int32_t height_;
+	float GetHeight() const {return shader_.GetHeight();}
 	Shader shader_;
 	Shader& Shader() {return shader_;}
 };

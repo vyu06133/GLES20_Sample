@@ -14,78 +14,73 @@ public:
 
 	virtual void LookAt(const vec3& e, const vec3& c, const vec3& u)
 	{
-		eye_ = e;
-		center_ = c;
-		up_ = u;
+		mEye = e;
+		mCenter = c;
+		mUp = u;
 	}
 
 	virtual void SetClip(const float& n, const float& f)
 	{
-		near_ = n;
-		far_ = f;
+		mNear = n;
+		mFar = f;
 	}
 
 	virtual void SetPers(const float& fov)
 	{
-		pers_ = true;
-		fov_ = fov;
+		mPers = true;
+		mFov = fov;
 	}
 
 	virtual void SetOrtho()
 	{
-		pers_ = false;
+		mPers = false;
 	}
 
 	virtual void OnPostTick() override
 	{
-		eyeWorld_ = (worldMatrix * vec4(eye_, 1.0f)).xyz();
-		centerWorld_ = (worldMatrix * vec4(center_, 1.0f)).xyz();
-		upWorld_  = glm::normalize((worldMatrix * vec4(up_, 0.0f)).xyz());
 	}
 
 	virtual void OnPostDraw() override
 	{
-		view_ = glm::lookAt(eyeWorld_, centerWorld_, upWorld_);
 		assert(ts);
 		auto s = ts->Shader();
-		if (pers_)
+		mEyeWorld = (worldMatrix * vec4(mEye, 1.0f)).xyz();
+		auto centerWold = (worldMatrix * vec4(mCenter, 1.0f)).xyz();
+		auto upWorld = glm::normalize((worldMatrix * vec4(mUp, 0.0f)).xyz());
+		mViewMatrix = glm::lookAt(mEyeWorld, centerWold, upWorld);
+		s.UpdateUniform(s.View, mViewMatrix);
+		//スペキュラーのためEyeWorldをシェーダに渡す
+		if (mPers)
 		{
-			proj_ = glm::perspective(glm::radians(fov_), s.GetAspect(), near_, far_);
+			mProjMatrix = glm::perspective(glm::radians(mFov), s.GetAspect(), mNear, mFar);
+			s.UpdateUniform(s.Projection, mProjMatrix);
 		}
 		else
 		{
-			proj_ = glm::ortho(0.0f, s.GetWidth(), s.GetHeight(), 0.0f, near_, far_);
+			mProjMatrix = glm::ortho(0.0f, s.GetWidth(), s.GetHeight(), 0.0f, mNear, mFar);
+			s.UpdateUniform(s.Projection, mProjMatrix);
 		}
-		s.UpdateUniform(s.View, view_);
-		s.UpdateUniform(s.Projection, proj_);
 	}
 
 	virtual vec3 Unproject(const vec3& scr) const
 	{
-		auto x = static_cast<float>(scr.x);
-		auto y = static_cast<float>(scr.y);
 		assert(ts);
-		auto w = (float)ts->Width();
-		auto h = (float)ts->Height();
-		vec3 s(scr.x, h - scr.y, scr.z);
 		vec3 posVec = glm::unProject(
-				s,
-				view_,
-				proj_,
-				vec4(0.0f, 0.0f, w, h));
+				vec3(scr.x, ts->GetHeight() - scr.y, scr.z),
+				mViewMatrix,
+				mProjMatrix,
+				vec4(0.0f, 0.0f, ts->GetWidth(), ts->GetHeight()));
 		return posVec;
 	}
 
-	vec3 eye_;
-	vec3 center_;
-	vec3 up_;
-	vec3 eyeWorld_;
-	vec3 centerWorld_;
-	vec3 upWorld_;
-	float near_ = 0.1f;
-	float far_ = 20.0f;
-	float fov_ = 60.0f;//deg
-	bool pers_ = true;
-	mat4 view_;
-	mat4 proj_;
+	vec3 mEye;
+	vec3 mEyeWorld;
+	vec3 mCenter;
+	vec3 mUp;
+	float mNear = 0.1f;
+	float mFar = 10000.0f;
+	float mFov = 60.0f;//deg
+	bool mPers = true;
+	mat4 mViewMatrix;
+	mat4 mProjMatrix;
 };

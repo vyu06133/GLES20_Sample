@@ -34,8 +34,8 @@ struct Test
 		}
 		virtual void OnCreate() override
 		{
-			Geometry::GenarateCube(&mPnc,vec3(5.0f));
-			auto s= ts->Shader();
+//			Geometry::GenarateCube(&mPnc,vec3(5.0f));
+			Geometry::GenerateSphere(&mPnc, 4.0f, 12, 10);
 		}
 		virtual void OnDraw() override
 		{

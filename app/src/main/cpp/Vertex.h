@@ -21,7 +21,7 @@ public:
 
 	VertexP() : pos(0.0f) {}
 	VertexP(const vec3& P) : pos(P) {}
-	VertexP(const float& X, const float& Y, const float& Z) : pos(vec3(X, Y, Z)) {}
+	VertexP(const float& X, const float& Y, const float& Z) : pos(X, Y, Z) {}
 
 	inline static INPUT_ELEMENT_DESC InputLayout[] = {
 			{"a_position", 0, 3, GL_FLOAT},
@@ -37,7 +37,7 @@ public:
 	VertexPNC(const float& PX, const float& PY, const float& PZ,
 	          const float& NX, const float& NY, const float& NZ,
 	          const float& R, const float& G, const float& B, const float& A)
-		: VertexP(vec3(PX, PY, PZ)), normal(NX, NY, NZ), color(R, G, B, A) {}
+		: VertexP(PX, PY, PZ), normal(NX, NY, NZ), color(R, G, B, A) {}
 
 	inline static INPUT_ELEMENT_DESC InputLayout[] = {
 			{ "a_position", 0, 3, GL_FLOAT },
@@ -133,68 +133,130 @@ struct Geometry
 		}
 	}
 
-	static inline void GenarateSphere(std::vector<VertexPNC>* vertices, float diameter, size_t tessellation)
+	static void GenerateSphere(std::vector<VertexPNC>* vertices, float radius, int slices, int stacks)
 	{
-		assert(tessellation >= 3);
-
-		std::vector<VertexPNC> vtx;
-		const size_t verticalSegments = tessellation;
-		const size_t horizontalSegments = tessellation * 2;
-
-		const float radius = diameter * 0.5f;
-
-		// Create rings of vertices at progressively higher latitudes.
-		for (size_t i = 0; i <= verticalSegments; i++)
-		{
-			const float v = 1 - float(i) / float(verticalSegments);
-
-			const float latitude = (float(i) * 180.0f / float(verticalSegments)) - 90.0f;
-			float dy = MyMath::Sin(latitude);
-			float dxz = MyMath::Cos(latitude);
-
-			for (size_t j = 0; j <= horizontalSegments; j++)
-			{
-				const float u = float(j) / float(horizontalSegments);
-
-				const float longitude = float(j) * 360.0f / float(horizontalSegments);
-				float dx = MyMath::Sin(longitude);
-				float dz = MyMath::Cos(longitude);
-
-				dx *= dxz;
-				dz *= dxz;
-
-				const vec3 normal(dx, dy, dz);
-				const vec4 col(dx, dy, dz, 1.0f);
-
-				vtx.push_back(VertexPNC(normal * radius, normal, col));
-			}
-		}
-		std::vector<uint16_t> idx;
-		idx.reserve(verticalSegments * (verticalSegments+1) * 6);
-		const size_t stride = horizontalSegments + 1;
-
-		for (size_t i = 0; i < verticalSegments; i++)
-		{
-			for (size_t j = 0; j <= horizontalSegments; j++)
-			{
-				const size_t nextI = i + 1;
-				const size_t nextJ = (j + 1) % stride;
-
-				idx.push_back(uint16_t(i * stride + j));
-				idx.push_back(uint16_t(nextI * stride + j));
-				idx.push_back(uint16_t(i * stride + nextJ));
-
-				idx.push_back(uint16_t(i * stride + nextJ));
-				idx.push_back(uint16_t(nextI * stride + j));
-				idx.push_back(uint16_t(nextI * stride + nextJ));
-			}
-		}
-
+		// 既存のデータをクリア
 		vertices->clear();
-		vertices->reserve(idx.size());
-		for (const auto& i: idx)
+
+		if (slices == 0 || stacks < 2)
 		{
-			vertices->push_back(vtx.at(i));
+			LOGE("Warning: slices = 0 or stacks < 2. No sphere generated.\n");
+			return;
 		}
+
+		// `std::vector` を使用して sin/cos テーブルを安全に管理
+		std::vector<float> sint1(slices + 1);
+		std::vector<float> cost1(slices + 1);
+		std::vector<float> sint2(stacks + 1);
+		std::vector<float> cost2(stacks + 1);
+
+		// スライス (全円) の計算
+		float angle_step_slices = 2.0f * MyMath::_PAI / (float)slices;
+		for (int i = 0; i <= slices; ++i)
+		{
+			sint1[i] = MyMath::Sin(angle_step_slices * i);
+			cost1[i] = MyMath::Cos(angle_step_slices * i);
+		}
+
+		// スタック (半円) の計算
+		float angle_step_stacks = MyMath::_PAI / (float)stacks;
+		for (int i = 0; i <= stacks; ++i)
+		{
+			sint2[i] = MyMath::Sin(angle_step_stacks * i);
+			cost2[i] = MyMath::Cos(angle_step_stacks * i);
+		}
+
+		// --- 頂点の生成 ---
+
+		// 最初にすべてのユニークな頂点を生成する (中間ステップ)
+		// これにより、計算が簡素化され、後で三角形を形成しやすくなります
+		// 実際の頂点データは、三角形を構成するために複数回追加されます
+		std::vector<std::vector<VertexPNC>> grid_vertices(stacks + 1, std::vector<VertexPNC>(slices + 1));
+
+		// 北極
+		grid_vertices[0][0] = VertexPNC(
+				vec3(0.0f, 0.0f, radius),
+				vec3(0.0f, 0.0f, 1.0f),
+				vec4(0.0f, 0.0f, 1.0f, 1.0f) // 青色
+		);
+
+		// 中間の緯度帯の頂点
+		for (int i = 1; i < stacks; i++)
+		{
+			for (int j = 0; j <= slices; j++)
+			{
+				float x = cost1[j] * sint2[i];
+				float y = sint1[j] * sint2[i];
+				float z = cost2[i];
+
+				grid_vertices[i][j] = VertexPNC(
+						vec3(x * radius, y * radius, z * radius),
+						vec3(x, y, z),
+						vec4(MyMath::Abs(x), MyMath::Abs(y), MyMath::Abs(z), 1.0f)
+				);
+			}
+		}
+
+		// 南極
+		grid_vertices[stacks][0] = VertexPNC(
+				vec3(0.0f, 0.0f, -radius),
+				vec3(0.0f, 0.0f, -1.0f),
+				vec4(0.0f, 0.0f, 1.0f, 1.0f) // 青色
+		);
+
+
+		// --- TRIANGLES として頂点を直接追加 ---
+
+		// 1. 北極周囲の三角形
+		// 北極の頂点は grid_vertices[0][0] を使用
+		for (int j = 0; j < slices; ++j)
+		{
+			// v0: 北極
+			// v1: 最初の緯度帯の現在の頂点 (i=1, j)
+			// v2: 最初の緯度帯の次の頂点 (i=1, j+1)
+			vertices->push_back(grid_vertices[0][0]); // 北極
+
+			// 注意: grid_vertices[0][0] は単一の北極頂点です
+			// 最初の緯度帯の頂点は grid_vertices[1][j] と grid_vertices[1][j+1] を参照します
+			vertices->push_back(grid_vertices[1][j+1]); // 次の頂点 (反時計回りの場合)
+			vertices->push_back(grid_vertices[1][j]);   // 現在の頂点
+		}
+
+		// 2. 中間の帯の四角形を2つの三角形に分割
+		for (int i = 1; i < stacks - 1; ++i) // i=1 から stacks-2 まで
+		{
+			for (int j = 0; j < slices; ++j)
+			{
+				// 四角形の4つの頂点
+				// v1 -- v2   (grid_vertices[i][j]   -- grid_vertices[i][j+1])
+				// |     |
+				// v4 -- v3   (grid_vertices[i+1][j] -- grid_vertices[i+1][j+1])
+
+				// 1つ目の三角形 (v1, v4, v3)
+				vertices->push_back(grid_vertices[i][j]);         // v1
+				vertices->push_back(grid_vertices[i+1][j]);       // v4
+				vertices->push_back(grid_vertices[i+1][j+1]);     // v3
+
+				// 2つ目の三角形 (v1, v3, v2)
+				vertices->push_back(grid_vertices[i][j]);         // v1
+				vertices->push_back(grid_vertices[i+1][j+1]);     // v3
+				vertices->push_back(grid_vertices[i][j+1]);       // v2
+			}
+		}
+
+		// 3. 南極周囲の三角形
+		// 南極の頂点は grid_vertices[stacks][0] を使用
+		for (int j = 0; j < slices; ++j) {
+			// v0: 南極
+			// v1: 最後の緯度帯の現在の頂点 (i=stacks-1, j)
+			// v2: 最後の緯度帯の次の頂点 (i=stacks-1, j+1)
+			vertices->push_back(grid_vertices[stacks][0]); // 南極
+
+			// 最後の緯度帯の頂点は grid_vertices[stacks-1][j] と grid_vertices[stacks-1][j+1] を参照します
+			vertices->push_back(grid_vertices[stacks-1][j]);       // 現在の頂点 (反時計回りの場合)
+			vertices->push_back(grid_vertices[stacks-1][j+1]);     // 次の頂点
+		}
+
+		LOGD("Sphere generated with %zu vertices.\n", vertices->size());
 	}
 };

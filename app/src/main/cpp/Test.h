@@ -24,6 +24,28 @@ struct Test
 		}
 	};
 
+	class Obj : public TaskBase
+	{
+	public:
+		std::vector<VertexPNC> mPnc;
+		virtual void OnTick(float deltaTime) override
+		{
+			localMatrix = mat4(1.0f);
+		}
+		virtual void OnCreate() override
+		{
+			Geometry::GenarateCube(&mPnc,vec3(5.0f));
+			auto s= ts->Shader();
+		}
+		virtual void OnDraw() override
+		{
+			auto s = ts->Shader();
+			s.UpdateUniform(s.Model,worldMatrix);
+			s.BindVertexBuffer(mPnc.data());
+			glDrawArrays(GL_TRIANGLES,0,mPnc.size());
+		}
+	};
+
 	class Stage : public TaskBase
 	{
 	public:
@@ -142,6 +164,7 @@ static inline std::vector<VertexPNC> vpnc;
 		auto& s = ts.Shader();
 		glUseProgram(s.Program());
 		ts.Tick(1.0f);
+		glEnable(GL_DEPTH_TEST);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		ts.Draw();
 #endif
@@ -151,5 +174,6 @@ static inline std::vector<VertexPNC> vpnc;
 	{
 		auto c = ts.CreateTask<Camera>(nullptr,"Camera",0,0);
 		auto s = ts.CreateTask<Stage>(nullptr,"Stage",1,1);
+		auto o = ts.CreateTask<Obj>(nullptr,"Obj",1,1);
 	}
 };

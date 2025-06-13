@@ -6,7 +6,6 @@ Test test;
 
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_gles20_1sample_MyGLRenderer_nativePassAssetManager(JNIEnv* env, jobject thiz, jobject javaAssetManager)
-//MyGLRenderer.nativePassAssetManager(JNIEnv* env, jobject thiz, jobject javaAssetManager)
 {
 	AAssetManager* mgr = AAssetManager_fromJava(env, javaAssetManager);
 

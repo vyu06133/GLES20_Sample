@@ -1,6 +1,7 @@
 package com.example.gles20_sample
 
 import android.util.Log
+import android.content.res.AssetManager;
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
@@ -12,7 +13,7 @@ class MyGLRenderer : GLSurfaceView.Renderer {
 	external fun nativeTouchEvent(action:Int, x:Int, y:Int)
 	external fun nativeSurfaceChanged(width: Int, height: Int)
 	external fun nativeDrawFrame()
-	external fun nativeRender(mvpMatrix: FloatArray)
+	external fun nativePassAssetManager(assetManager: AssetManager)
 	
 	// 行列関連
 	private val projectionMatrix = FloatArray(16)
@@ -38,26 +39,6 @@ class MyGLRenderer : GLSurfaceView.Renderer {
 	}
 	
 	override fun onDrawFrame(unused: javax.microedition.khronos.opengles.GL10?) {
-	if (false){
-		// ビュー行列（カメラ）
-		Matrix.setLookAtM(
-			viewMatrix, 0,
-			0f, 0f, 5f,   // eye
-			0f, 0f, 0f,   // center
-			0f, 1f, 0f
-		)   // up
-		
-		// モデル行列（回転）
-		Matrix.setIdentityM(modelMatrix, 0)
-		Matrix.rotateM(modelMatrix, 0, angle, 0f, 1f, 0f)
-		
-		// 最終的なMVP行列を構築
-		val tempMatrix = FloatArray(16)
-		Matrix.multiplyMM(tempMatrix, 0, viewMatrix, 0, modelMatrix, 0)
-		Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, tempMatrix, 0)
-	}
-		// C++で描画（nativeRenderにMVP行列を渡す）
-		nativeRender(mvpMatrix)
 		nativeDrawFrame()
 	}
 	

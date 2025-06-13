@@ -12,8 +12,9 @@ class MyGLSurfaceView(context: Context) : GLSurfaceView(context) {
 	private var previousY = 0f
 	
 	init {
-		setEGLContextClientVersion(2)
+		setEGLContextClientVersion(3)
 		renderer = MyGLRenderer()
+		renderer.nativePassAssetManager(context.getAssets())
 		setRenderer(renderer)
 		renderMode = RENDERMODE_CONTINUOUSLY
 	}

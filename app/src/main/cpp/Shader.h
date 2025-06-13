@@ -263,8 +263,11 @@ public:
 		while (elm && elm->SemanticName != nullptr)
 		{
 			auto handle = glGetAttribLocation(program_, elm->SemanticName);
-			glEnableVertexAttribArray(handle);
-			glVertexAttribPointer(handle, elm->size, GL_FLOAT, GL_FALSE, sizeof(V), ofs);
+			if(handle >= 0)
+			{
+				glEnableVertexAttribArray(handle);
+				glVertexAttribPointer(handle, elm->size, GL_FLOAT, GL_FALSE, sizeof(V), ofs);
+			}
 			ofs += sizeof(GLfloat) * elm->size;
 			elm++;
 		}

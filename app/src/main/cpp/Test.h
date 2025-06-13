@@ -11,6 +11,7 @@
 struct Test
 {
 	static inline TaskSystem ts;
+	static inline AAssetManager* assetManager;
 
 	class Camera : public CameraBase
 	{
@@ -27,44 +28,47 @@ struct Test
 	class Obj : public TaskBase
 	{
 	public:
-		std::vector<VertexPNC> mPnc;
+		static inline std::vector<VertexPNCT> mPnct;
 		virtual void OnTick(float deltaTime) override
 		{
 			localMatrix = mat4(1.0f);
 		}
 		virtual void OnCreate() override
 		{
-//			Geometry::GenarateCube(&mPnc,vec3(5.0f));
-			Geometry::GenerateSphere(&mPnc, 4.0f, 12, 10);
+			if (mPnct.size()==0)
+			{
+//			    Geometry::GenarateCube(&mPnc,vec3(5.0f));
+				Geometry::GenerateSphere(&mPnct, 4.0f, 24, 12);
+			}
 		}
 		virtual void OnDraw() override
 		{
 			auto s = ts->Shader();
 			s.UpdateUniform(s.Model,worldMatrix);
-			s.BindVertexBuffer(mPnc.data());
-			glDrawArrays(GL_TRIANGLES,0,mPnc.size());
+			s.BindVertexBuffer(mPnct.data());
+			glDrawArrays(GL_TRIANGLES,0,mPnct.size());
 		}
 	};
 
 	class Stage : public TaskBase
 	{
 	public:
-		std::vector<VertexPNC> mPnc;
+		std::vector<VertexPNCT> mPnct;
 		virtual void OnTick(float deltaTime) override
 		{
 			localMatrix = mat4(1.0f);
 		}
 		virtual void OnCreate() override
 		{
-			Geometry::GenerateCheckerPlaneZX(&mPnc,vec3(20.0f),vec3(20.0f),vec4(0.1f, 0.1f, 0.1f, 1.0f), vec4(0.9f, 0.9f, 0.9f, 1.0f));
+			Geometry::GenerateCheckerPlaneZX(&mPnct,vec3(20.0f),vec3(20.0f),vec4(0.1f, 0.1f, 0.1f, 1.0f), vec4(0.9f, 0.9f, 0.9f, 1.0f));
 			auto s= ts->Shader();
 		}
 		virtual void OnDraw() override
 		{
 			auto s = ts->Shader();
 			s.UpdateUniform(s.Model,worldMatrix);
-			s.BindVertexBuffer(mPnc.data());
-			glDrawArrays(GL_TRIANGLES,0,mPnc.size());
+			s.BindVertexBuffer(mPnct.data());
+			glDrawArrays(GL_TRIANGLES,0,mPnct.size());
 		}
 	};
 
@@ -102,7 +106,7 @@ struct Test
 static inline mat4 model_;
 static inline mat4 view_;
 static inline mat4 proj_;
-static inline std::vector<VertexPNC> vpnc;
+static inline std::vector<VertexPNCT> vpnct;
 	static inline void Init()
 	{
 		auto& s = ts.Shader();
@@ -118,7 +122,7 @@ static inline std::vector<VertexPNC> vpnc;
 		s.UpdateUniform(s.Model,model_);
 		s.UpdateUniform(s.View,view_);
 		s.UpdateUniform(s.Projection,proj_);
-		Geometry::GenerateCheckerPlaneZX(&vpnc,vec3(20.0f),vec3(20.0f),vec4(0.1f, 0.1f, 0.1f, 1.0f), vec4(0.9f, 0.9f, 0.9f, 1.0f));
+		Geometry::GenerateCheckerPlaneZX(&vpnct,vec3(20.0f),vec3(20.0f),vec4(0.1f, 0.1f, 0.1f, 1.0f), vec4(0.9f, 0.9f, 0.9f, 1.0f));
 	}
 
 	static inline void SurfaceChanged(int width, int height)
@@ -131,6 +135,7 @@ static inline std::vector<VertexPNC> vpnc;
 	static inline void Touch(int action, int x, int y)
 	{
 		ts.BroadcastTouch(action,x,y);
+
 	}
 
 	static inline void DrawFrame()
@@ -157,8 +162,8 @@ static inline std::vector<VertexPNC> vpnc;
 		proj_=glm::perspective(glm::radians(60.f),s.GetAspect(),.1f,10000.f);
 		s.UpdateUniform(s.Projection,proj_);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		s.BindVertexBuffer(vpnc.data());
-//		glDrawArrays(GL_TRIANGLES, 0, vpnc.size());
+		s.BindVertexBuffer(vpnct.data());
+//		glDrawArrays(GL_TRIANGLES, 0, vpnct.size());
 */
 #else
 		auto& s = ts.Shader();

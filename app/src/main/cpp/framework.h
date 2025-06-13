@@ -27,7 +27,12 @@
 #include <unordered_map>
 #include <functional>
 
-#include <GLES2/gl2.h>
+#include <jni.h> // JNI の基本ヘッダー
+#include <android/asset_manager.h>
+#include <android/asset_manager_jni.h>
+#include <android/log.h>
+
+#include <GLES3/gl3.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_SWIZZLE
@@ -50,7 +55,21 @@ using glm::mat3;
 using glm::mat4;
 using GlmVariant = std::variant<int, float, vec2, vec3, vec4, quat, mat3, mat4>;
 
-#include <android/log.h>
+struct Rect
+{
+	int    left;
+	int    top;
+	int    right;
+	int    bottom;
+	int Width() const
+	{
+		return right-left;
+	}
+	int Height() const
+	{
+		return bottom-top;
+	}
+};
 #define LOG_TAG "GLES20_Sample"
 
 // 各ログレベルに対応するマクロを定義

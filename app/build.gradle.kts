@@ -5,12 +5,12 @@ plugins {
 
 android {
 	namespace = "com.example.gles20_sample"
-	compileSdk = 35
+	compileSdk = 33
 	
 	defaultConfig {
 		applicationId = "com.example.gles20_sample"
-		minSdk = 34
-		targetSdk = 35
+		minSdk = 21
+		targetSdk = 33
 		versionCode = 1
 		versionName = "1.0"
 		
@@ -53,15 +53,17 @@ android {
 	buildFeatures {
 		viewBinding = true
 	}
+	ndkVersion = "27.0.12077973"
 }
 
 dependencies {
-	
-	implementation(libs.androidx.core.ktx)
-	implementation(libs.androidx.appcompat)
-	implementation(libs.material)
-	implementation(libs.androidx.constraintlayout)
-	testImplementation(libs.junit)
-	androidTestImplementation(libs.androidx.junit)
-	androidTestImplementation(libs.androidx.espresso.core)
+	implementation("com.google.android.material:material:1.9.0")
+	implementation("androidx.appcompat:appcompat:1.6.1")
+	implementation("androidx.core:core-ktx:1.10.0")
+	implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+	implementation("androidx.transition:transition:1.4.1")
+	implementation("androidx.activity:activity:1.7.2")
+	implementation("androidx.profileinstaller:profileinstaller:1.3.1")
 }
+
+
